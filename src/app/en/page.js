@@ -83,8 +83,8 @@ export default function EnglishPage() {
     const [showModal, setShowModal] = useState(false);
     const [summaryText, setSummaryText] = useState("");
 
-    const phoneNumber = "+998 (94) 778-08-80";
-    const telegramUsername = 'ginza_onodera_admin';
+    const phoneNumber = "+998987744747";
+    const telegramUsername = 'Ulugbek1974';
     const instagramUrl = "https://instagram.com/lazizhouse";
 
     // Тексты на английском
