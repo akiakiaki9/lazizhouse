@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useCallback, memo } from "react";
-import { FaUtensils, FaUserTie, FaBuilding, FaWhatsapp, FaTelegramPlane, FaStar, FaPaperPlane, FaTimes, FaInstagram } from "react-icons/fa";
+import { FaUtensils, FaUserTie, FaBuilding, FaWhatsapp, FaTelegramPlane, FaStar, FaTimes, FaInstagram, FaArrowRight, FaHeart, FaPaperPlane } from "react-icons/fa";
 import { useRouter, usePathname } from 'next/navigation';
-import "./styles/globals.css";
 
 // Мемоизированный компонент звездного рейтинга
 const StarRating = memo(({ rating, setRating, color }) => (
@@ -16,10 +15,13 @@ const StarRating = memo(({ rating, setRating, color }) => (
         style={styles.starButton}
         className="star-btn"
       >
-        <FaStar 
-          size={32} 
-          color={star <= rating ? color : "#e5e7eb"}
-          style={{ transition: "all 0.2s ease" }}
+        <FaStar
+          size={36}
+          color={star <= rating ? color : "#cbd5e1"}
+          style={{
+            transition: "all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+            filter: star <= rating ? "drop-shadow(0 0 5px currentColor)" : "none"
+          }}
         />
       </button>
     ))}
@@ -29,31 +31,47 @@ const StarRating = memo(({ rating, setRating, color }) => (
 StarRating.displayName = 'StarRating';
 
 // Мемоизированный компонент секции с отзывом
-const RatingSection = memo(({ 
-  title, 
-  rating, 
-  setRating, 
-  feedback, 
-  setFeedback, 
-  Icon, 
+const RatingSection = memo(({
+  title,
+  rating,
+  setRating,
+  feedback,
+  setFeedback,
+  Icon,
   color,
-  placeholder
+  placeholder,
+  delay
 }) => {
   const handleFeedbackChange = useCallback((e) => {
     setFeedback(e.target.value);
   }, [setFeedback]);
 
   return (
-    <div style={{ ...styles.section, borderLeft: `4px solid ${color}` }}>
+    <div
+      className="section-card animated-card"
+      style={{
+        ...styles.section,
+        background: "#ffffff",
+        animationDelay: `${delay}s`
+      }}
+    >
       <div style={styles.sectionHeader}>
-        <div style={{ ...styles.iconWrapper, background: `${color}15` }}>
-          <Icon size={24} color={color} />
+        <div
+          className="glow-icon"
+          style={{
+            ...styles.iconWrapper,
+            background: `${color}15`,
+            border: `2px solid ${color}30`,
+            animation: "iconGlow 2s ease-in-out infinite"
+          }}
+        >
+          <Icon size={28} color={color} />
         </div>
-        <h3 style={styles.sectionTitle}>{title}</h3>
+        <h3 style={{ ...styles.sectionTitle, color: "#1e293b" }}>{title}</h3>
       </div>
-      
+
       <StarRating rating={rating} setRating={setRating} color={color} />
-      
+
       <textarea
         style={{ ...styles.sectionTextarea, borderColor: `${color}30` }}
         placeholder={placeholder}
@@ -71,23 +89,22 @@ export default function HomePage() {
   const router = useRouter();
   const pathname = usePathname();
   const isEnglish = pathname === '/en';
-  
+
   const [foodRating, setFoodRating] = useState(0);
   const [serviceRating, setServiceRating] = useState(0);
   const [atmosphereRating, setAtmosphereRating] = useState(0);
-  
+
   const [foodFeedback, setFoodFeedback] = useState("");
   const [serviceFeedback, setServiceFeedback] = useState("");
   const [atmosphereFeedback, setAtmosphereFeedback] = useState("");
-  
+
   const [showModal, setShowModal] = useState(false);
   const [summaryText, setSummaryText] = useState("");
 
   const phoneNumber = "+998987744747";
   const telegramUsername = 'Ulugbek1974';
-  const instagramUrl = "https://instagram.com/lazizhouse";
+  const instagramUrl = "https://www.instagram.com/lazizhouse";
 
-  // Тексты на разных языках
   const texts = {
     ru: {
       title: "Оцените ваш визит",
@@ -95,9 +112,9 @@ export default function HomePage() {
       foodTitle: "Оценка блюд",
       serviceTitle: "Качество обслуживания",
       atmosphereTitle: "Атмосфера и интерьер",
-      foodPlaceholder: "Ваш отзыв о блюдах...",
-      servicePlaceholder: "Ваш отзыв об обслуживании...",
-      atmospherePlaceholder: "Ваш отзыв об атмосфере...",
+      foodPlaceholder: "Поделитесь впечатлениями о блюдах...",
+      servicePlaceholder: "Расскажите о качестве обслуживания...",
+      atmospherePlaceholder: "Опишите атмосферу и интерьер...",
       submit: "Отправить оценку",
       thankYou: "Благодарим за отзыв!",
       shareTitle: "Поделиться оценкой",
@@ -112,9 +129,9 @@ export default function HomePage() {
       foodTitle: "Food Rating",
       serviceTitle: "Service Quality",
       atmosphereTitle: "Atmosphere & Interior",
-      foodPlaceholder: "Your feedback about the food...",
-      servicePlaceholder: "Your feedback about the service...",
-      atmospherePlaceholder: "Your feedback about the atmosphere...",
+      foodPlaceholder: "Share your thoughts about the food...",
+      servicePlaceholder: "Tell us about the service quality...",
+      atmospherePlaceholder: "Describe the atmosphere and interior...",
       submit: "Submit Rating",
       thankYou: "Thank you for your feedback!",
       shareTitle: "Share Rating",
@@ -130,7 +147,7 @@ export default function HomePage() {
   const handleFoodRating = useCallback((rating) => setFoodRating(rating), []);
   const handleServiceRating = useCallback((rating) => setServiceRating(rating), []);
   const handleAtmosphereRating = useCallback((rating) => setAtmosphereRating(rating), []);
-  
+
   const handleFoodFeedback = useCallback((text) => setFoodFeedback(text), []);
   const handleServiceFeedback = useCallback((text) => setServiceFeedback(text), []);
   const handleAtmosphereFeedback = useCallback((text) => setAtmosphereFeedback(text), []);
@@ -193,7 +210,7 @@ ${t.thankYou}
   }, [summaryText]);
 
   const closeModal = useCallback(() => setShowModal(false), []);
-  
+
   const switchLanguage = useCallback(() => {
     if (isEnglish) {
       router.push('/');
@@ -204,13 +221,34 @@ ${t.thankYou}
 
   return (
     <div style={styles.wrapper}>
+      {/* Animated Background */}
+      <div style={styles.animatedBg}></div>
+      <div style={styles.gradientBg}></div>
+
+      {/* Floating Particles */}
+      <div style={styles.particles}>
+        {[...Array(15)].map((_, i) => (
+          <div
+            key={i}
+            style={{
+              ...styles.particle,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${3 + Math.random() * 4}s`,
+              width: `${2 + Math.random() * 4}px`,
+              height: `${2 + Math.random() * 4}px`,
+            }}
+          />
+        ))}
+      </div>
+
       {/* Header */}
       <header style={styles.header}>
         <div style={styles.headerContainer}>
           <div style={styles.logoArea}>
-            <img 
-              src="/images/logo.png" 
-              alt="Laziz House" 
+            <img
+              src="/images/logo.png"
+              alt="Laziz House"
               style={styles.logoImage}
               onError={(e) => {
                 e.target.style.display = 'none';
@@ -218,32 +256,35 @@ ${t.thankYou}
               }}
             />
             <div style={{ ...styles.logoFallback, display: 'none' }}>
-              Laziz House
+              <FaPaperPlane size={24} color="#8b5cf6" />
+              <span>Laziz House</span>
             </div>
+            <span style={styles.logoText}>Laziz House</span>
           </div>
-          
+
           <div style={styles.headerActions}>
-            <a 
-              href={instagramUrl} 
-              target="_blank" 
+            <a
+              href={instagramUrl}
+              target="_blank"
               rel="noopener noreferrer"
               style={styles.instagramLink}
-              aria-label="Instagram"
             >
-              <FaInstagram size={28} />
+              <FaInstagram size={18} />
+              <span>Instagram</span>
             </a>
             <a href={`tel:${phoneNumber}`} style={styles.phoneLink}>
+              <span>📞</span>
               {phoneNumber}
             </a>
             <button onClick={switchLanguage} style={styles.languageButton}>
               {isEnglish ? (
                 <>
-                  <span style={styles.flagIcon}>🇷🇺</span>
+                  <span>🇷🇺</span>
                   <span>РУ</span>
                 </>
               ) : (
                 <>
-                  <span style={styles.flagIcon}>🇬🇧</span>
+                  <span>🇬🇧</span>
                   <span>EN</span>
                 </>
               )}
@@ -255,6 +296,11 @@ ${t.thankYou}
       {/* Main Content */}
       <main style={styles.main}>
         <div style={styles.hero}>
+          <div style={styles.heroBadge}>
+            <FaHeart size={14} style={{ marginRight: "8px" }} />
+            WE VALUE YOUR OPINION
+            <FaHeart size={14} style={{ marginLeft: "8px" }} />
+          </div>
           <h1 style={styles.heroTitle}>
             {t.title}
           </h1>
@@ -264,52 +310,49 @@ ${t.thankYou}
         </div>
 
         <form onSubmit={handleSubmit} style={styles.form}>
-          <div className="section-card">
-            <RatingSection
-              title={t.foodTitle}
-              rating={foodRating}
-              setRating={handleFoodRating}
-              feedback={foodFeedback}
-              setFeedback={handleFoodFeedback}
-              Icon={FaUtensils}
-              color="#2563eb"
-              placeholder={t.foodPlaceholder}
-            />
-          </div>
-          
-          <div className="section-card">
-            <RatingSection
-              title={t.serviceTitle}
-              rating={serviceRating}
-              setRating={handleServiceRating}
-              feedback={serviceFeedback}
-              setFeedback={handleServiceFeedback}
-              Icon={FaUserTie}
-              color="#059669"
-              placeholder={t.servicePlaceholder}
-            />
-          </div>
-          
-          <div className="section-card">
-            <RatingSection
-              title={t.atmosphereTitle}
-              rating={atmosphereRating}
-              setRating={handleAtmosphereRating}
-              feedback={atmosphereFeedback}
-              setFeedback={handleAtmosphereFeedback}
-              Icon={FaBuilding}
-              color="#3b82f6"
-              placeholder={t.atmospherePlaceholder}
-            />
-          </div>
+          <RatingSection
+            title={t.foodTitle}
+            rating={foodRating}
+            setRating={handleFoodRating}
+            feedback={foodFeedback}
+            setFeedback={handleFoodFeedback}
+            Icon={FaUtensils}
+            color="#f59e0b"
+            placeholder={t.foodPlaceholder}
+            delay={0.1}
+          />
 
-          <button 
-            type="submit" 
+          <RatingSection
+            title={t.serviceTitle}
+            rating={serviceRating}
+            setRating={handleServiceRating}
+            feedback={serviceFeedback}
+            setFeedback={handleServiceFeedback}
+            Icon={FaUserTie}
+            color="#10b981"
+            placeholder={t.servicePlaceholder}
+            delay={0.2}
+          />
+
+          <RatingSection
+            title={t.atmosphereTitle}
+            rating={atmosphereRating}
+            setRating={handleAtmosphereRating}
+            feedback={atmosphereFeedback}
+            setFeedback={handleAtmosphereFeedback}
+            Icon={FaBuilding}
+            color="#8b5cf6"
+            placeholder={t.atmospherePlaceholder}
+            delay={0.3}
+          />
+
+          <button
+            type="submit"
             style={styles.submitButton}
             className="submit-btn"
           >
-            <FaPaperPlane style={{ marginRight: "8px" }} />
-            {t.submit}
+            <span>{t.submit}</span>
+            <FaArrowRight style={{ marginLeft: "8px" }} />
           </button>
         </form>
       </main>
@@ -320,9 +363,9 @@ ${t.thankYou}
           <p style={styles.copyright}>
             © 2026 Laziz House. {t.copyright}
           </p>
-          <a 
-            href="https://akbarsoft.uz" 
-            target="_blank" 
+          <a
+            href="https://akbarsoft.uz"
+            target="_blank"
             rel="noopener noreferrer"
             style={styles.devLink}
           >
@@ -333,27 +376,26 @@ ${t.thankYou}
 
       {/* Modal */}
       {showModal && (
-        <div 
-          style={styles.modalOverlay} 
+        <div
+          style={styles.modalOverlay}
           onClick={closeModal}
           className="modal-overlay"
         >
-          <div 
-            style={styles.modalContent} 
+          <div
+            style={styles.modalContent}
             onClick={(e) => e.stopPropagation()}
             className="modal-content"
           >
             <div style={styles.modalHeader}>
               <h2 style={styles.modalTitle}>{t.shareTitle}</h2>
-              <button 
+              <button
                 style={styles.closeButton}
                 onClick={closeModal}
-                aria-label="Закрыть"
               >
                 <FaTimes size={20} />
               </button>
             </div>
-            
+
             <div style={styles.modalPreview}>
               {summaryText.split('\n').map((line, i) => (
                 <p key={i} style={{ margin: '4px 0' }}>{line}</p>
@@ -369,7 +411,7 @@ ${t.thankYou}
                 <FaWhatsapp size={20} style={{ marginRight: "12px", color: "#25D366" }} />
                 WhatsApp
               </button>
-              
+
               <button
                 style={{ ...styles.shareButton, color: "#0088cc", borderColor: "#0088cc30" }}
                 onClick={() => shareTo("telegram")}
@@ -392,11 +434,52 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#0f0f1a",
+    position: "relative",
+    overflowX: "hidden",
+  },
+  animatedBg: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: "radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%)",
+    animation: "gradientBG 15s ease infinite",
+    pointerEvents: "none",
+    zIndex: 0,
+  },
+  gradientBg: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
+    pointerEvents: "none",
+    zIndex: -1,
+  },
+  particles: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    pointerEvents: "none",
+    zIndex: 0,
+  },
+  particle: {
+    position: "absolute",
+    bottom: "0",
+    background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
+    borderRadius: "50%",
+    opacity: 0.2,
+    animation: "float 3s infinite ease-in-out",
   },
   header: {
-    borderBottom: "1px solid #f1f5f9",
-    backgroundColor: "#ffffff",
+    borderBottom: "1px solid rgba(139, 92, 246, 0.2)",
+    backgroundColor: "rgba(15, 15, 26, 0.9)",
+    backdropFilter: "blur(20px)",
     position: "sticky",
     top: 0,
     zIndex: 100,
@@ -404,7 +487,7 @@ const styles = {
   headerContainer: {
     maxWidth: "1200px",
     margin: "0 auto",
-    padding: "20px 24px",
+    padding: "16px 24px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
@@ -414,99 +497,137 @@ const styles = {
   logoArea: {
     display: "flex",
     alignItems: "center",
+    gap: "12px",
   },
   logoImage: {
-    height: "60px",
+    height: "45px",
     width: "auto",
     objectFit: "contain",
   },
   logoFallback: {
-    fontSize: "28px",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    fontSize: "20px",
     fontWeight: "700",
-    color: "#1e293b",
+    color: "#ffffff",
+  },
+  logoText: {
+    fontSize: "22px",
+    fontWeight: "700",
+    background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    backgroundClip: "text",
     letterSpacing: "-0.5px",
   },
   headerActions: {
     display: "flex",
     alignItems: "center",
-    gap: "20px",
+    gap: "12px",
+    flexWrap: "wrap",
   },
   instagramLink: {
-    color: "#E4405F",
-    transition: "all 0.2s ease",
     display: "flex",
     alignItems: "center",
-    padding: "8px",
-    borderRadius: "12px",
-    backgroundColor: "#f8fafc",
-    border: "1px solid #e2e8f0",
+    gap: "8px",
+    color: "#ec4899",
+    textDecoration: "none",
+    padding: "8px 16px",
+    borderRadius: "10px",
+    backgroundColor: "rgba(236, 72, 153, 0.1)",
+    border: "1px solid rgba(236, 72, 153, 0.3)",
+    transition: "all 0.3s ease",
+    fontWeight: "500",
+    fontSize: "14px",
   },
   phoneLink: {
-    fontSize: "15px",
-    color: "#1e293b",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    fontSize: "14px",
+    color: "#e2e8f0",
     textDecoration: "none",
     fontWeight: "500",
     padding: "8px 16px",
-    borderRadius: "8px",
-    backgroundColor: "#f8fafc",
-    border: "1px solid #e2e8f0",
-    transition: "all 0.2s ease",
+    borderRadius: "10px",
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    transition: "all 0.3s ease",
     whiteSpace: "nowrap",
   },
   languageButton: {
-    fontSize: "15px",
-    color: "#1e293b",
+    fontSize: "14px",
+    color: "#e2e8f0",
     textDecoration: "none",
     fontWeight: "500",
     padding: "8px 16px",
-    borderRadius: "8px",
-    backgroundColor: "#f8fafc",
-    border: "1px solid #e2e8f0",
-    transition: "all 0.2s ease",
+    borderRadius: "10px",
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    transition: "all 0.3s ease",
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     gap: "8px",
     fontFamily: "inherit",
   },
-  flagIcon: {
-    fontSize: "18px",
-  },
   main: {
     flex: 1,
     maxWidth: "680px",
     margin: "0 auto",
     width: "100%",
-    padding: "48px 24px",
+    padding: "60px 24px",
+    position: "relative",
+    zIndex: 1,
   },
   hero: {
     textAlign: "center",
     marginBottom: "48px",
   },
+  heroBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    background: "rgba(139, 92, 246, 0.2)",
+    backdropFilter: "blur(10px)",
+    padding: "8px 20px",
+    borderRadius: "50px",
+    fontSize: "12px",
+    fontWeight: "600",
+    color: "#8b5cf6",
+    marginBottom: "20px",
+    letterSpacing: "1px",
+    border: "1px solid rgba(139, 92, 246, 0.3)",
+  },
   heroTitle: {
-    fontSize: "36px",
+    fontSize: "48px",
     fontWeight: "700",
-    color: "#0f172a",
-    marginBottom: "8px",
-    letterSpacing: "-0.5px",
+    background: "linear-gradient(135deg, #fff 0%, #8b5cf6 50%, #ec4899 100%)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    backgroundClip: "text",
+    marginBottom: "16px",
+    letterSpacing: "-1px",
   },
   heroSubtitle: {
-    fontSize: "16px",
-    color: "#64748b",
+    fontSize: "18px",
+    color: "rgba(255, 255, 255, 0.7)",
     margin: 0,
     fontWeight: "400",
   },
   form: {
     display: "flex",
     flexDirection: "column",
-    gap: "20px",
+    gap: "24px",
   },
   section: {
-    background: "#ffffff",
-    padding: "28px",
-    borderRadius: "16px",
-    border: "1px solid #f1f5f9",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+    padding: "32px",
+    borderRadius: "24px",
+    border: "1px solid rgba(0, 0, 0, 0.1)",
+    transition: "all 0.3s ease",
+    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+    position: "relative",
   },
   sectionHeader: {
     display: "flex",
@@ -515,24 +636,24 @@ const styles = {
     marginBottom: "24px",
   },
   iconWrapper: {
-    width: "40px",
-    height: "40px",
-    borderRadius: "10px",
+    width: "56px",
+    height: "56px",
+    borderRadius: "18px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    transition: "all 0.3s ease",
   },
   sectionTitle: {
     margin: 0,
-    fontSize: "18px",
+    fontSize: "20px",
     fontWeight: "600",
-    color: "#1e293b",
   },
   starsWrapper: {
     display: "flex",
-    gap: "12px",
+    gap: "16px",
     justifyContent: "center",
-    marginBottom: "20px",
+    marginBottom: "24px",
     flexWrap: "wrap",
   },
   starButton: {
@@ -548,21 +669,22 @@ const styles = {
     width: "100%",
     padding: "14px 16px",
     fontSize: "14px",
-    borderRadius: "12px",
-    border: "1px solid",
+    borderRadius: "16px",
+    border: "1px solid #e2e8f0",
     resize: "vertical",
     fontFamily: "inherit",
-    backgroundColor: "#fafafa",
+    backgroundColor: "#ffffff",
+    color: "#1e293b",
     boxSizing: "border-box",
   },
   submitButton: {
-    background: "linear-gradient(135deg, #2563eb 0%, #059669 100%)",
+    background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
     color: "white",
     border: "none",
-    padding: "16px 24px",
+    padding: "18px 32px",
     fontSize: "16px",
     fontWeight: "600",
-    borderRadius: "12px",
+    borderRadius: "16px",
     cursor: "pointer",
     marginTop: "12px",
     display: "flex",
@@ -570,11 +692,16 @@ const styles = {
     justifyContent: "center",
     position: "relative",
     overflow: "hidden",
+    gap: "8px",
   },
   footer: {
-    borderTop: "1px solid #f1f5f9",
-    backgroundColor: "#ffffff",
+    borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+    backgroundColor: "rgba(15, 15, 26, 0.9)",
+    backdropFilter: "blur(20px)",
     padding: "24px",
+    marginTop: "auto",
+    position: "relative",
+    zIndex: 1,
   },
   footerContent: {
     maxWidth: "1200px",
@@ -587,11 +714,11 @@ const styles = {
   },
   copyright: {
     margin: 0,
-    color: "#64748b",
+    color: "rgba(255, 255, 255, 0.5)",
     fontSize: "14px",
   },
   devLink: {
-    color: "#2563eb",
+    color: "#8b5cf6",
     textDecoration: "none",
     fontWeight: "500",
     fontSize: "14px",
@@ -599,7 +726,7 @@ const styles = {
   },
   devName: {
     fontWeight: "600",
-    color: "#059669",
+    color: "#ec4899",
   },
   modalOverlay: {
     position: "fixed",
@@ -607,8 +734,8 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(15, 23, 42, 0.6)",
-    backdropFilter: "blur(4px)",
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    backdropFilter: "blur(12px)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -616,12 +743,12 @@ const styles = {
     zIndex: 1000,
   },
   modalContent: {
-    background: "white",
-    borderRadius: "20px",
-    padding: "28px",
+    background: "linear-gradient(135deg, #1a1a2e, #16213e)",
+    borderRadius: "24px",
+    padding: "32px",
     maxWidth: "460px",
     width: "100%",
-    boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)",
+    border: "1px solid rgba(139, 92, 246, 0.3)",
   },
   modalHeader: {
     display: "flex",
@@ -633,29 +760,29 @@ const styles = {
     margin: 0,
     fontSize: "20px",
     fontWeight: "600",
-    color: "#0f172a",
+    color: "#ffffff",
   },
   closeButton: {
-    background: "none",
+    background: "rgba(255, 255, 255, 0.1)",
     border: "none",
     cursor: "pointer",
-    color: "#94a3b8",
-    padding: "4px",
+    color: "#ffffff",
+    padding: "8px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: "6px",
+    borderRadius: "10px",
     transition: "all 0.2s ease",
   },
   modalPreview: {
-    background: "#f8fafc",
+    background: "rgba(0, 0, 0, 0.3)",
     padding: "18px",
-    borderRadius: "12px",
+    borderRadius: "16px",
     fontSize: "14px",
     whiteSpace: "pre-wrap",
     marginBottom: "24px",
-    border: "1px solid #e2e8f0",
-    color: "#334155",
+    border: "1px solid rgba(139, 92, 246, 0.2)",
+    color: "#e2e8f0",
     maxHeight: "300px",
     overflowY: "auto",
     lineHeight: "1.6",
@@ -663,19 +790,20 @@ const styles = {
   modalButtons: {
     display: "flex",
     flexDirection: "column",
-    gap: "10px",
+    gap: "12px",
   },
   shareButton: {
-    background: "white",
+    background: "rgba(255, 255, 255, 0.05)",
     border: "2px solid",
     padding: "14px 18px",
     fontSize: "15px",
     fontWeight: "500",
-    borderRadius: "12px",
+    borderRadius: "14px",
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     textAlign: "left",
     transition: "all 0.2s ease",
+    color: "#ffffff",
   },
 };
