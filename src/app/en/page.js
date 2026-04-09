@@ -124,7 +124,7 @@ export default function EnglishPage() {
             foodPlaceholder: "Tell us what dishes you especially liked...",
             saladsTitle: "How do you like our salads?",
             saladsPlaceholder: "Share your impressions of the salads (if you tried)...",
-            cityTitle: "How do you like ancient Bukhara?",
+            cityTitle: "How do you like our family?",
             cityPlaceholder: "Share your impressions of our historical city...",
             serviceTitle: "Service Quality",
             servicePlaceholder: "Tell us about the service quality...",

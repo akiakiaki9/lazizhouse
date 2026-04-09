@@ -124,7 +124,7 @@ export default function HomePage() {
       foodPlaceholder: "Расскажите, что особенно понравилось из блюд...",
       saladsTitle: "Как вам наши салаты?",
       saladsPlaceholder: "Поделитесь впечатлениями о салатах (если пробовали)...",
-      cityTitle: "Как вам древняя Бухара?",
+      cityTitle: "Как вам наша семья?",
       cityPlaceholder: "Поделитесь впечатлениями о нашем историческом городе...",
       serviceTitle: "Качество обслуживания",
       servicePlaceholder: "Расскажите о качестве обслуживания...",
