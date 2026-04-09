@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, memo } from "react";
-import { FaUtensils, FaUserTie, FaBuilding, FaWhatsapp, FaTelegramPlane, FaStar, FaTimes, FaInstagram, FaArrowRight, FaHeart, FaPaperPlane } from "react-icons/fa";
+import { FaUtensils, FaUserTie, FaBuilding, FaStar, FaTimes, FaInstagram, FaArrowRight, FaHeart, FaPaperPlane, FaCity, FaCheckCircle, FaLeaf } from "react-icons/fa";
 import { useRouter, usePathname } from 'next/navigation';
 
 // Мемоизированный компонент звездного рейтинга
@@ -40,7 +40,8 @@ const RatingSection = memo(({
     Icon,
     color,
     placeholder,
-    delay
+    delay,
+    optional = false
 }) => {
     const handleFeedbackChange = useCallback((e) => {
         setFeedback(e.target.value);
@@ -52,7 +53,8 @@ const RatingSection = memo(({
             style={{
                 ...styles.section,
                 background: "#ffffff",
-                animationDelay: `${delay}s`
+                animationDelay: `${delay}s`,
+                opacity: 0
             }}
         >
             <div style={styles.sectionHeader}>
@@ -62,12 +64,14 @@ const RatingSection = memo(({
                         ...styles.iconWrapper,
                         background: `${color}15`,
                         border: `2px solid ${color}30`,
-                        animation: "iconGlow 2s ease-in-out infinite"
                     }}
                 >
                     <Icon size={28} color={color} />
                 </div>
-                <h3 style={{ ...styles.sectionTitle, color: "#1e293b" }}>{title}</h3>
+                <h3 style={{ ...styles.sectionTitle, color: "#1e293b" }}>
+                    {title}
+                    {optional && <span style={styles.optionalBadge}>Optional</span>}
+                </h3>
             </div>
 
             <StarRating rating={rating} setRating={setRating} color={color} />
@@ -90,35 +94,48 @@ export default function EnglishPage() {
     const pathname = usePathname();
     const isEnglish = pathname === '/en';
 
+    // Основные оценки (обязательные)
     const [foodRating, setFoodRating] = useState(0);
     const [serviceRating, setServiceRating] = useState(0);
     const [atmosphereRating, setAtmosphereRating] = useState(0);
+    const [cityRating, setCityRating] = useState(0);
 
+    // Опциональные оценки
+    const [saladsRating, setSaladsRating] = useState(0);
+
+    // Текстовые отзывы
     const [foodFeedback, setFoodFeedback] = useState("");
     const [serviceFeedback, setServiceFeedback] = useState("");
     const [atmosphereFeedback, setAtmosphereFeedback] = useState("");
+    const [cityFeedback, setCityFeedback] = useState("");
+    const [saladsFeedback, setSaladsFeedback] = useState("");
 
-    const [showModal, setShowModal] = useState(false);
-    const [summaryText, setSummaryText] = useState("");
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const phoneNumber = "+998987744747";
-    const telegramUsername = 'Ulugbek1974';
     const instagramUrl = "https://www.instagram.com/lazizhouse";
 
     const texts = {
         en: {
-            title: "Rate Your Visit",
+            title: "Share Your Experience",
             subtitle: "Your opinion helps us become better",
-            foodTitle: "Food Rating",
+            foodTitle: "🍜 How do you like our cuisine?",
+            foodPlaceholder: "Tell us what dishes you especially liked...",
+            saladsTitle: "How do you like our salads?",
+            saladsPlaceholder: "Share your impressions of the salads (if you tried)...",
+            cityTitle: "How do you like ancient Bukhara?",
+            cityPlaceholder: "Share your impressions of our historical city...",
             serviceTitle: "Service Quality",
-            atmosphereTitle: "Atmosphere & Interior",
-            foodPlaceholder: "Share your thoughts about the food...",
             servicePlaceholder: "Tell us about the service quality...",
+            atmosphereTitle: "Atmosphere & Interior",
             atmospherePlaceholder: "Describe the atmosphere and interior...",
-            submit: "Submit Rating",
-            thankYou: "Thank you for your feedback!",
-            shareTitle: "Share Rating",
-            alert: "Please rate all categories.",
+            submit: "Submit Review",
+            submitting: "Sending...",
+            successTitle: "Thank you for your feedback! 🙏",
+            successMessage: "Your opinion is very important to us. We will definitely consider all wishes!",
+            successButton: "Excellent! ✨",
+            alert: "Please rate the main categories (cuisine, service, atmosphere, city). Salads are optional.",
             copyright: "All rights reserved.",
             developed: "Developed by",
             by: "Akbar Soft"
@@ -127,57 +144,80 @@ export default function EnglishPage() {
 
     const t = texts.en;
 
-    const handleFoodRating = useCallback((rating) => setFoodRating(rating), []);
-    const handleServiceRating = useCallback((rating) => setServiceRating(rating), []);
-    const handleAtmosphereRating = useCallback((rating) => setAtmosphereRating(rating), []);
+    // Функция отправки в Telegram через API
+    const sendToTelegram = async () => {
+        try {
+            const response = await fetch('/api/send-review', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    foodRating,
+                    serviceRating,
+                    atmosphereRating,
+                    cityRating,
+                    saladsRating: saladsRating || 0,
+                    foodFeedback,
+                    serviceFeedback,
+                    atmosphereFeedback,
+                    cityFeedback,
+                    saladsFeedback: saladsFeedback || "",
+                    isEnglish: true
+                }),
+            });
 
-    const handleFoodFeedback = useCallback((text) => setFoodFeedback(text), []);
-    const handleServiceFeedback = useCallback((text) => setServiceFeedback(text), []);
-    const handleAtmosphereFeedback = useCallback((text) => setAtmosphereFeedback(text), []);
+            const data = await response.json();
 
-    const handleSubmit = useCallback((e) => {
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to send');
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error:', error);
+            return false;
+        }
+    };
+
+    const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
-        if (foodRating === 0 || serviceRating === 0 || atmosphereRating === 0) {
+
+        // Проверяем только обязательные категории (салаты пропускаем)
+        if (foodRating === 0 || serviceRating === 0 || atmosphereRating === 0 || cityRating === 0) {
             alert(t.alert);
             return;
         }
 
-        const text = `
-🍽️ LAZIZ HOUSE - RATING
-━━━━━━━━━━━━━━━━━━━━
+        setIsSubmitting(true);
 
-⭐ Food: ${foodRating}/5
-${foodFeedback ? `📝 ${foodFeedback}` : ""}
+        // Отправляем в Telegram через наш API
+        const success = await sendToTelegram();
 
-⭐ Service: ${serviceRating}/5
-${serviceFeedback ? `📝 ${serviceFeedback}` : ""}
+        if (success) {
+            setShowSuccess(true);
 
-⭐ Atmosphere: ${atmosphereRating}/5
-${atmosphereFeedback ? `📝 ${atmosphereFeedback}` : ""}
-
-━━━━━━━━━━━━━━━━━━━━
-${t.thankYou}
-    `.trim();
-
-        setSummaryText(text);
-        setShowModal(true);
-    }, [foodRating, serviceRating, atmosphereRating, foodFeedback, serviceFeedback, atmosphereFeedback, t]);
-
-    const shareTo = useCallback((platform) => {
-        let url = "";
-        const encodedText = encodeURIComponent(summaryText);
-
-        if (platform === "telegram") {
-            url = `https://t.me/${telegramUsername}?text=${encodedText}`;
-        } else if (platform === "whatsapp") {
-            url = `https://wa.me/${phoneNumber.replace(/[^0-9]/g, '')}?text=${encodedText}`;
+            // Сброс формы через 3 секунды
+            setTimeout(() => {
+                setFoodRating(0);
+                setServiceRating(0);
+                setAtmosphereRating(0);
+                setCityRating(0);
+                setSaladsRating(0);
+                setFoodFeedback("");
+                setServiceFeedback("");
+                setAtmosphereFeedback("");
+                setCityFeedback("");
+                setSaladsFeedback("");
+            }, 3000);
+        } else {
+            alert("Error sending. Please try again later.");
         }
 
-        window.open(url, "_blank");
-        setShowModal(false);
-    }, [summaryText]);
+        setIsSubmitting(false);
+    }, [foodRating, serviceRating, atmosphereRating, cityRating, foodFeedback, serviceFeedback, atmosphereFeedback, cityFeedback, saladsFeedback, saladsRating, t]);
 
-    const closeModal = useCallback(() => setShowModal(false), []);
+    const closeSuccess = useCallback(() => setShowSuccess(false), []);
 
     const switchLanguage = useCallback(() => {
         router.push('/');
@@ -265,36 +305,66 @@ ${t.thankYou}
                 </div>
 
                 <form onSubmit={handleSubmit} style={styles.form}>
+                    {/* ОСНОВНОЙ ОПРОС: Кухня/блюда (обязательный) */}
                     <RatingSection
                         title={t.foodTitle}
                         rating={foodRating}
-                        setRating={handleFoodRating}
+                        setRating={setFoodRating}
                         feedback={foodFeedback}
-                        setFeedback={handleFoodFeedback}
+                        setFeedback={setFoodFeedback}
                         Icon={FaUtensils}
                         color="#f59e0b"
                         placeholder={t.foodPlaceholder}
                         delay={0.1}
                     />
 
+                    {/* ОПЦИОНАЛЬНЫЙ ОПРОС: Салаты */}
                     <RatingSection
-                        title={t.serviceTitle}
-                        rating={serviceRating}
-                        setRating={handleServiceRating}
-                        feedback={serviceFeedback}
-                        setFeedback={handleServiceFeedback}
-                        Icon={FaUserTie}
-                        color="#10b981"
-                        placeholder={t.servicePlaceholder}
+                        title={t.saladsTitle}
+                        rating={saladsRating}
+                        setRating={setSaladsRating}
+                        feedback={saladsFeedback}
+                        setFeedback={setSaladsFeedback}
+                        Icon={FaLeaf}
+                        color="#22c55e"
+                        placeholder={t.saladsPlaceholder}
+                        delay={0.15}
+                        optional={true}
+                    />
+
+                    {/* ОПРОС: Город Бухара (обязательный) */}
+                    <RatingSection
+                        title={t.cityTitle}
+                        rating={cityRating}
+                        setRating={setCityRating}
+                        feedback={cityFeedback}
+                        setFeedback={setCityFeedback}
+                        Icon={FaCity}
+                        color="#06b6d4"
+                        placeholder={t.cityPlaceholder}
                         delay={0.2}
                     />
 
+                    {/* ОПРОС: Обслуживание (обязательный) */}
+                    <RatingSection
+                        title={t.serviceTitle}
+                        rating={serviceRating}
+                        setRating={setServiceRating}
+                        feedback={serviceFeedback}
+                        setFeedback={setServiceFeedback}
+                        Icon={FaUserTie}
+                        color="#10b981"
+                        placeholder={t.servicePlaceholder}
+                        delay={0.25}
+                    />
+
+                    {/* ОПРОС: Атмосфера (обязательный) */}
                     <RatingSection
                         title={t.atmosphereTitle}
                         rating={atmosphereRating}
-                        setRating={handleAtmosphereRating}
+                        setRating={setAtmosphereRating}
                         feedback={atmosphereFeedback}
-                        setFeedback={handleAtmosphereFeedback}
+                        setFeedback={setAtmosphereFeedback}
                         Icon={FaBuilding}
                         color="#8b5cf6"
                         placeholder={t.atmospherePlaceholder}
@@ -303,11 +373,16 @@ ${t.thankYou}
 
                     <button
                         type="submit"
-                        style={styles.submitButton}
+                        style={{
+                            ...styles.submitButton,
+                            opacity: isSubmitting ? 0.7 : 1,
+                            cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                        }}
                         className="submit-btn"
+                        disabled={isSubmitting}
                     >
-                        <span>{t.submit}</span>
-                        <FaArrowRight style={{ marginLeft: "8px" }} />
+                        <span>{isSubmitting ? t.submitting : t.submit}</span>
+                        {!isSubmitting && <FaArrowRight style={{ marginLeft: "8px" }} />}
                     </button>
                 </form>
             </main>
@@ -329,11 +404,11 @@ ${t.thankYou}
                 </div>
             </footer>
 
-            {/* Modal */}
-            {showModal && (
+            {/* Success Modal (вместо выбора WhatsApp/Telegram) */}
+            {showSuccess && (
                 <div
                     style={styles.modalOverlay}
-                    onClick={closeModal}
+                    onClick={closeSuccess}
                     className="modal-overlay"
                 >
                     <div
@@ -341,41 +416,21 @@ ${t.thankYou}
                         onClick={(e) => e.stopPropagation()}
                         className="modal-content"
                     >
-                        <div style={styles.modalHeader}>
-                            <h2 style={styles.modalTitle}>{t.shareTitle}</h2>
-                            <button
-                                style={styles.closeButton}
-                                onClick={closeModal}
-                            >
-                                <FaTimes size={20} />
-                            </button>
+                        <div style={styles.successIconWrapper}>
+                            <FaCheckCircle size={64} color="#10b981" />
                         </div>
 
-                        <div style={styles.modalPreview}>
-                            {summaryText.split('\n').map((line, i) => (
-                                <p key={i} style={{ margin: '4px 0' }}>{line}</p>
-                            ))}
-                        </div>
+                        <h2 style={styles.successTitle}>{t.successTitle}</h2>
 
-                        <div style={styles.modalButtons}>
-                            <button
-                                style={{ ...styles.shareButton, color: "#25D366", borderColor: "#25D36630" }}
-                                onClick={() => shareTo("whatsapp")}
-                                className="share-btn"
-                            >
-                                <FaWhatsapp size={20} style={{ marginRight: "12px", color: "#25D366" }} />
-                                WhatsApp
-                            </button>
+                        <p style={styles.successMessage}>{t.successMessage}</p>
 
-                            <button
-                                style={{ ...styles.shareButton, color: "#0088cc", borderColor: "#0088cc30" }}
-                                onClick={() => shareTo("telegram")}
-                                className="share-btn"
-                            >
-                                <FaTelegramPlane size={20} style={{ marginRight: "12px", color: "#0088cc" }} />
-                                Telegram
-                            </button>
-                        </div>
+                        <button
+                            style={styles.successButton}
+                            onClick={closeSuccess}
+                            className="success-btn"
+                        >
+                            {t.successButton}
+                        </button>
                     </div>
                 </div>
             )}
@@ -400,7 +455,6 @@ const styles = {
         right: 0,
         bottom: 0,
         background: "radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%)",
-        animation: "gradientBG 15s ease infinite",
         pointerEvents: "none",
         zIndex: 0,
     },
@@ -589,6 +643,7 @@ const styles = {
         alignItems: "center",
         gap: "12px",
         marginBottom: "24px",
+        flexWrap: "wrap",
     },
     iconWrapper: {
         width: "56px",
@@ -603,6 +658,19 @@ const styles = {
         margin: 0,
         fontSize: "20px",
         fontWeight: "600",
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+        flexWrap: "wrap",
+    },
+    optionalBadge: {
+        fontSize: "12px",
+        fontWeight: "500",
+        padding: "4px 10px",
+        borderRadius: "20px",
+        background: "#f1f5f9",
+        color: "#64748b",
+        marginLeft: "8px",
     },
     starsWrapper: {
         display: "flex",
@@ -700,65 +768,40 @@ const styles = {
     modalContent: {
         background: "linear-gradient(135deg, #1a1a2e, #16213e)",
         borderRadius: "24px",
-        padding: "32px",
+        padding: "40px 32px",
         maxWidth: "460px",
         width: "100%",
         border: "1px solid rgba(139, 92, 246, 0.3)",
+        textAlign: "center",
     },
-    modalHeader: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: "20px",
-    },
-    modalTitle: {
-        margin: 0,
-        fontSize: "20px",
-        fontWeight: "600",
-        color: "#ffffff",
-    },
-    closeButton: {
-        background: "rgba(255, 255, 255, 0.1)",
-        border: "none",
-        cursor: "pointer",
-        color: "#ffffff",
-        padding: "8px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: "10px",
-        transition: "all 0.2s ease",
-    },
-    modalPreview: {
-        background: "rgba(0, 0, 0, 0.3)",
-        padding: "18px",
-        borderRadius: "16px",
-        fontSize: "14px",
-        whiteSpace: "pre-wrap",
+    successIconWrapper: {
         marginBottom: "24px",
-        border: "1px solid rgba(139, 92, 246, 0.2)",
-        color: "#e2e8f0",
-        maxHeight: "300px",
-        overflowY: "auto",
+    },
+    successTitle: {
+        margin: "0 0 16px 0",
+        fontSize: "28px",
+        fontWeight: "700",
+        background: "linear-gradient(135deg, #fff, #8b5cf6)",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        backgroundClip: "text",
+    },
+    successMessage: {
+        color: "rgba(255, 255, 255, 0.8)",
+        fontSize: "16px",
         lineHeight: "1.6",
+        marginBottom: "32px",
     },
-    modalButtons: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-    },
-    shareButton: {
-        background: "rgba(255, 255, 255, 0.05)",
-        border: "2px solid",
-        padding: "14px 18px",
-        fontSize: "15px",
-        fontWeight: "500",
-        borderRadius: "14px",
+    successButton: {
+        background: "linear-gradient(135deg, #10b981, #059669)",
+        color: "white",
+        border: "none",
+        padding: "14px 32px",
+        fontSize: "16px",
+        fontWeight: "600",
+        borderRadius: "50px",
         cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        textAlign: "left",
-        transition: "all 0.2s ease",
-        color: "#ffffff",
+        transition: "all 0.3s ease",
+        width: "100%",
     },
 };
