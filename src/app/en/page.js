@@ -114,7 +114,7 @@ export default function EnglishPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const phoneNumber = "+998987744747";
-    const instagramUrl = "https://www.instagram.com/lazizhouse";
+    const instagramUrl = "https://www.instagram.com/restaurant_laziz_house_bukhara";
 
     const texts = {
         en: {
